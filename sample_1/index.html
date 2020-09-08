@@ -1,0 +1,94 @@
+<html>
+  <head>
+    <title>Sample 1. Web Speech API</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+
+    <p id="msg"></p>
+    <textarea id="text" rows="5" cols="50%" placeholder="再生するテキストを入力"></textarea>
+    <br/>
+    <br/>
+<!--
+    <select id="voice-names"></select>
+-->
+    <button id="speak-btn">音声読み上げ</button>
+    <button id="pause-btn">pause</button>
+    <button id="resume-btn">resume</button>
+    <button id="cancel-btn">cancel</button>
+
+
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script>
+
+      // ブラウザが対応しているか確認
+      if ("speechSynthesis" in window) {
+        $("#msg").css("color","green");
+        $("#msg").html("このブラウザは音声合成に対応しています。");
+      } else {
+        $("#msg").css("color","red");
+        $("#msg").html("このブラウザは音声合成に対応していません。");
+      }
+
+      // Fetch the list of voices and populate the voice options.
+      function loadVoices() {
+        // Fetch the available voices in English US.
+        let voices = speechSynthesis.getVoices();
+        $("#voice-names").empty();
+        voices.forEach(function(voice, i) {
+          // 日本語だけに絞る
+          if (voice.lang == "ja-JP") {
+            const $option = $("<option>");
+            $option.val(voice.name);
+            $option.text(voice.name + " (" + voice.lang + ")");
+            $("#voice-names").append($option);
+          }
+        });
+      }
+
+      // Execute loadVoices.
+      //loadVoices();
+
+      // Chrome loads voices asynchronously.
+      window.speechSynthesis.onvoiceschanged = function(e) {
+        //loadVoices();
+      };
+
+      const uttr = new SpeechSynthesisUtterance();
+
+      // Set up an event listener for when the 'speak' button is clicked.
+      // Create a new utterance for the specified text and add it to the queue.
+      $("#speak-btn").click(function() {
+        uttr.text = $("#text").val();
+
+        // 読み上げ速度 0.1-10 初期値:1 (倍速なら2, 半分の倍速なら0.5, )
+        uttr.rate = 1;
+
+        // 声の高さ 0-2 初期値:1(0で女性の声)
+        //uttr.pitch = 1;
+
+        // 日本語:ja-JP, アメリカ英語:en-US, イギリス英語:en-GB, 中国語:zh-CN, 韓国語:ko-KR
+        uttr.lang  = 'ja-JP';
+
+        // If a voice has been selected, find the voice and set the
+        // utterance instance's voice attribute.
+        /*if ($("#voice-names").val()) {
+          uttr.voice = speechSynthesis
+            .getVoices()
+            .filter(voice => voice.name == $("#voice-names").val())[0];
+        }*/
+        speechSynthesis.speak(uttr);
+      });
+      $("#pause-btn").click(function() {
+        speechSynthesis.pause();
+      });
+      $("#resume-btn").click(function() {
+        speechSynthesis.resume();
+      });
+      $("#cancel-btn").click(function() {
+        speechSynthesis.cancel();
+      });
+    </script>
+ </body>
+
+</html>
